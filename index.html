@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Focus Bubble | Distraction Tracker</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+</head>
+<body class="light-theme">
+  <div class="app-container">
+    <header>
+      <div class="logo-container">
+        <div class="logo">
+          <span class="bubble"></span>
+          <span class="bubble"></span>
+          <span class="bubble"></span>
+        </div>
+        <h1>Focus Bubble</h1>
+      </div>
+      <div class="theme-toggle">
+        <button id="theme-toggle-btn" aria-label="Toggle theme">
+          <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section class="timer-section">
+        <div class="status-indicator">
+          <div id="status-dot" class="status-dot"></div>
+          <span id="status-message" class="status-message">Ready to focus</span>
+        </div>
+        
+        <div class="timer-display">
+          <div class="timer-value" id="timer-display">00:00</div>
+          <div class="timer-label">Study Time</div>
+        </div>
+
+        <div class="distraction-counter">
+          <div class="counter-value" id="distraction-count">0</div>
+          <div class="counter-label">Distractions</div>
+        </div>
+      </section>
+
+      <section class="controls-section">
+        <div class="main-controls">
+          <button id="start-btn" class="btn primary">Start Session</button>
+          <button id="pause-btn" class="btn secondary" disabled>Pause</button>
+          <button id="resume-btn" class="btn secondary" disabled>Resume</button>
+          <button id="reset-btn" class="btn danger" disabled>Reset</button>
+        </div>
+        
+        <div class="settings-controls">
+          <div class="setting-group">
+            <label for="max-distractions">Max Distractions:</label>
+            <input type="number" id="max-distractions" min="1" value="3">
+          </div>
+          
+          <div class="setting-group">
+            <label for="sound-toggle">Notifications:</label>
+            <div class="toggle-container">
+              <input type="checkbox" id="sound-toggle" checked>
+              <label for="sound-toggle" class="toggle-label"></label>
+            </div>
+          </div>
+          
+          <div class="setting-group" id="volume-control-container">
+            <label for="volume-control">Volume:</label>
+            <input type="range" id="volume-control" min="0" max="1" step="0.1" value="0.5">
+          </div>
+        </div>
+      </section>
+
+      <section class="stats-section">
+        <h2>Session Statistics</h2>
+        <div class="chart-container">
+          <canvas id="focus-chart"></canvas>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-title">Focus Time</div>
+            <div class="stat-value" id="focus-time">00:00</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Distraction Time</div>
+            <div class="stat-value" id="distraction-time">00:00</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Focus Ratio</div>
+            <div class="stat-value" id="focus-ratio">100%</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Distractions</div>
+            <div class="stat-value" id="total-distractions">0</div>
+          </div>
+        </div>
+        
+        <button id="download-data-btn" class="btn secondary">Download Session Data</button>
+        <button id="clear-data-btn" class="btn danger">Clear All Data</button>
+      </section>
+    </main>
+
+    <div id="alert-popup" class="alert-popup hidden">
+      <div class="alert-content">
+        <h3>Focus Alert!</h3>
+        <p id="alert-message">You've been distracted multiple times. Let's refocus!</p>
+        <button id="close-alert-btn" class="btn primary">Got it!</button>
+      </div>
+    </div>
+
+    <div id="help-modal" class="modal hidden">
+      <div class="modal-content">
+        <span id="close-help-modal" class="close-modal">&times;</span>
+        <h2>How to Use Focus Bubble</h2>
+        <div class="help-content">
+          <h3>Keyboard Shortcuts</h3>
+          <ul>
+            <li><kbd>Space</kbd> - Start/Pause/Resume session</li>
+            <li><kbd>R</kbd> - Reset session</li>
+            <li><kbd>M</kbd> - Mute/Unmute sound</li>
+            <li><kbd>H</kbd> - Show/Hide help</li>
+            <li><kbd>T</kbd> - Toggle theme</li>
+          </ul>
+          
+          <h3>How it Works</h3>
+          <p>Focus Bubble tracks your focus by detecting when you switch away from this tab or window. Each time you switch away, it counts as a distraction.</p>
+          <p>When you reach your maximum distraction limit, you'll receive an alert to help you refocus.</p>
+          
+          <h3>Tips for Better Focus</h3>
+          <ul>
+            <li>Close unnecessary tabs and applications</li>
+            <li>Put your phone away during focus sessions</li>
+            <li>Use the Pomodoro technique (25 min focus, 5 min break)</li>
+            <li>Set realistic distraction limits based on your focus ability</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <button id="help-btn" class="help-btn" aria-label="Help">?</button>
+
+  </div>
+  
+  <footer>
+    <p>&copy; 2025 Focus Bubble. All rights reserved.</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="module" src="js/main.js"></script>
+  
+</body>
+</html>
