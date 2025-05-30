@@ -6,85 +6,89 @@ export class NotificationManager {
     this.storage = storageManager;
     this.soundEnabled = this.storage.getPreferences()?.soundEnabled ?? true;
     this.volume = this.storage.getPreferences()?.volume ?? 0.5;
-    
-    // Initialize sound effects with multiple fallback options
+
+    // Initialize sound effects
     this.alertSound = new Audio();
     this.alertSound.volume = this.volume;
-    
-    // Array of fallback sound URLs
+
+    // Array of local sound file paths (must be in same directory)
     const soundUrls = [
-      'https://assets.mixkit.co/sfx/download/mixkit-software-interface-alert-2573.wav',
-      'https://assets.mixkit.co/sfx/download/mixkit-alert-quick-chime-766.wav',
-      'https://assets.mixkit.co/sfx/download/mixkit-clear-announce-tones-2861.wav'
+      'alert1.mp3',
+      'alert2.wav',
+      'alert3.wav'
     ];
-    
-    // Try loading sounds until one works
+
     this.loadSound(soundUrls);
-    
-    // Alert cooldown state
+
+    // Alert cooldown (to avoid rapid repeated alerts)
     this.alertCooldown = false;
-    this.alertCooldownTime = 60000; // 1 minute cooldown
-    
+    this.alertCooldownTime = 3000; // 3 seconds cooldown between alerts
+
     // Get UI elements
     this.alertPopup = document.getElementById('alert-popup');
     this.alertMessage = document.getElementById('alert-message');
+
+    // Start listening to tab visibility change
+    document.addEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
   }
-  
+
   /**
-   * Attempt to load sound from array of URLs
-   * @param {string[]} urls - Array of sound URLs to try
+   * Handle tab or window visibility change
+   */
+  handleVisibilityChange() {
+    if (document.hidden) {
+      this.showAlert('You left the tab!');
+    }
+  }
+
+  /**
+   * Attempt to load sound from array of local file paths
+   * @param {string[]} urls - Array of sound file paths to try
    */
   loadSound(urls) {
     let currentIndex = 0;
-    
+
     const tryNextSound = () => {
       if (currentIndex >= urls.length) {
         console.warn('Could not load any notification sounds');
         return;
       }
-      
+
       this.alertSound.src = urls[currentIndex];
       this.alertSound.load();
     };
-    
-    // Handle errors and try next sound
+
     this.alertSound.addEventListener('error', () => {
       currentIndex++;
       tryNextSound();
     });
-    
-    // Start loading the first sound
+
     tryNextSound();
   }
-  
+
   /**
    * Show an alert popup with message
    * @param {string} message - Message to display
    */
   showAlert(message) {
     if (this.alertCooldown) return;
-    
-    // Update alert message
+
     this.alertMessage.textContent = message;
-    
-    // Show popup
+
     this.alertPopup.classList.remove('hidden');
     setTimeout(() => {
       this.alertPopup.classList.add('show');
     }, 10);
-    
-    // Play alert sound if enabled and loaded
+
     if (this.soundEnabled && this.alertSound.readyState === 4) {
       this.playAlertSound();
     }
-    
-    // Show browser notification if permission granted
+
     this.showBrowserNotification('Focus Alert!', message);
-    
-    // Start cooldown
+
     this.startAlertCooldown();
   }
-  
+
   /**
    * Close the alert popup
    */
@@ -94,21 +98,20 @@ export class NotificationManager {
       this.alertPopup.classList.add('hidden');
     }, 300);
   }
-  
+
   /**
    * Play the alert sound effect
    */
   playAlertSound() {
-    if (!this.alertSound.readyState === 4) return;
-    
-    // Clone and play the sound to allow overlapping playback
+    if (this.alertSound.readyState !== 4) return;
+
     const sound = this.alertSound.cloneNode();
     sound.volume = this.volume;
     sound.play().catch(error => {
       console.warn('Error playing sound:', error);
     });
   }
-  
+
   /**
    * Show a browser notification if permission is granted
    * @param {string} title - Notification title
@@ -116,9 +119,9 @@ export class NotificationManager {
    */
   showBrowserNotification(title, body) {
     if (!("Notification" in window)) {
-      return; // Browser doesn't support notifications
+      return;
     }
-    
+
     if (Notification.permission === "granted") {
       new Notification(title, { body });
     } else if (Notification.permission !== "denied") {
@@ -129,7 +132,7 @@ export class NotificationManager {
       });
     }
   }
-  
+
   /**
    * Start cooldown period for alerts
    */
@@ -139,7 +142,7 @@ export class NotificationManager {
       this.alertCooldown = false;
     }, this.alertCooldownTime);
   }
-  
+
   /**
    * Enable or disable sound effects
    * @param {boolean} enabled - Whether sound should be enabled
@@ -147,7 +150,7 @@ export class NotificationManager {
   setSoundEnabled(enabled) {
     this.soundEnabled = enabled;
   }
-  
+
   /**
    * Set the volume for sound effects
    * @param {number} volume - Volume level (0.0 to 1.0)
